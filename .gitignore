@@ -3,6 +3,7 @@ env/
 dist/
 htmlcov/
 .tox/
+.DS_Store
 mkdocs.egg-info/
 *.pyc
 .coverage
