@@ -26,6 +26,10 @@ def load_config(cfg=None):
     cfg = cfg or {}
     if 'site_name' not in cfg:
         cfg['site_name'] = 'Example'
+    if 'config_file_path' not in cfg:
+        cfg['config_file_path'] = os.path.join(os.path.abspath('.'), 'mkdocs.yml')
+    if 'extra_css' not in cfg:
+        cfg['extra_css'] = ['css/extra.css']
     conf = config.Config(schema=config.DEFAULT_SCHEMA)
     conf.load_dict(cfg)
 
@@ -294,7 +298,7 @@ class BuildTests(unittest.TestCase):
         docs_dir = tempfile.mkdtemp()
         site_dir = tempfile.mkdtemp()
         try:
-            # Create a non-empty markdown file, image, dot file and dot directory.
+            # Create a non-empty markdown file, image, html file, dot file and dot directory.
             f = open(os.path.join(docs_dir, 'index.md'), 'w')
             f.write(dedent("""
                 page_title: custom title
@@ -309,6 +313,7 @@ class BuildTests(unittest.TestCase):
             """))
             f.close()
             open(os.path.join(docs_dir, 'img.jpg'), 'w').close()
+            open(os.path.join(docs_dir, 'example.html'), 'w').close()
             open(os.path.join(docs_dir, '.hidden'), 'w').close()
             os.mkdir(os.path.join(docs_dir, '.git'))
             open(os.path.join(docs_dir, '.git/hidden'), 'w').close()
@@ -322,8 +327,44 @@ class BuildTests(unittest.TestCase):
             # Verify only the markdown (coverted to html) and the image are copied.
             self.assertTrue(os.path.isfile(os.path.join(site_dir, 'index.html')))
             self.assertTrue(os.path.isfile(os.path.join(site_dir, 'img.jpg')))
+            self.assertTrue(os.path.isfile(os.path.join(site_dir, 'example.html')))
             self.assertFalse(os.path.isfile(os.path.join(site_dir, '.hidden')))
             self.assertFalse(os.path.isfile(os.path.join(site_dir, '.git/hidden')))
+        finally:
+            shutil.rmtree(docs_dir)
+            shutil.rmtree(site_dir)
+
+    def test_copy_theme_files(self):
+        docs_dir = tempfile.mkdtemp()
+        site_dir = tempfile.mkdtemp()
+        try:
+            # Create a non-empty markdown file.
+            f = open(os.path.join(docs_dir, 'index.md'), 'w')
+            f.write(dedent("""
+                page_title: custom title
+
+                # Heading 1
+
+                This is some text.
+            """))
+            f.close()
+
+            cfg = load_config({
+                'docs_dir': docs_dir,
+                'site_dir': site_dir
+            })
+            build.build(cfg)
+
+            # Verify only theme media are copied, not templates or Python files.
+            self.assertTrue(os.path.isfile(os.path.join(site_dir, 'index.html')))
+            self.assertTrue(os.path.isdir(os.path.join(site_dir, 'js')))
+            self.assertTrue(os.path.isdir(os.path.join(site_dir, 'css')))
+            self.assertTrue(os.path.isdir(os.path.join(site_dir, 'img')))
+            self.assertFalse(os.path.isfile(os.path.join(site_dir, '__init__.py')))
+            self.assertFalse(os.path.isfile(os.path.join(site_dir, '__init__.pyc')))
+            self.assertFalse(os.path.isfile(os.path.join(site_dir, 'base.html')))
+            self.assertFalse(os.path.isfile(os.path.join(site_dir, 'content.html')))
+            self.assertFalse(os.path.isfile(os.path.join(site_dir, 'nav.html')))
         finally:
             shutil.rmtree(docs_dir)
             shutil.rmtree(site_dir)

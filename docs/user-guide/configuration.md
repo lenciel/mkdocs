@@ -50,6 +50,56 @@ When set, provides a link to your GitHub or Bitbucket repository on each page.
 **default**: `'GitHub'` or `'Bitbucket'` if the `repo_url` matches those
 domains, otherwise `null`
 
+### edit_uri
+
+Path from the base `repo_url` to the docs directory when directly viewing a
+page, accounting for specifics of the repository host (e.g. GitHub, Bitbucket,
+etc), the branch, and the docs directory itself. Mkdocs concatenates `repo_url`
+and `edit_uri`, and appends the input path of the page.
+
+When set, provides a link directly to the page in your source repository. This
+makes it easier to find and edit the source for the page. If `repo_url` is not
+set, this option is ignored.
+
+For example, for a GitHub-hosted repository, the `edit_uri` would be as follows.
+(Note the `edit` path and `master` branch...)
+
+```yaml
+edit_uri: edit/master/docs/
+```
+
+For a Bitbucket-hosted repository, the equivalent `edit_uri` would be as
+follows. (Note the `src` path and `default` branch...)
+
+```yaml
+edit_uri: src/default/docs/
+```
+
+The `edit_uri` also supports query ('?') and fragment ('#') characters. For
+reposotiry hosts that use a query or a fragment to access the files, the
+`edit_uri` would be as follows. (Note the `?` and `#` in the uri...)
+
+```yaml
+# Query string example
+edit_uri: '?query=root/path/docs/'
+
+# Hash fragment example
+edit_uri: '#root/path/docs/'
+```
+
+For other repository hosts, `edit_uri` works the same way. Simply specify the
+relative path to the docs directory.
+
+**default**: `edit/master/docs/` or `src/default/docs/` for GitHub or Bitbucket
+repos, respectively, if `repo_url` matches those domains, otherwise `null`
+
+!!! note "Note:"
+    On GitHub, the `edit` path opens the page in the online GitHub editor. This
+    functionality requires that the user have and be logged in to a GitHub
+    account. Otherwise, the user will be redirected to a login/signup page.
+    Alternatively, use the `blob` path to open a read-only view, which supports
+    anonymous access. E.g. `blob/master/docs/`
+
 ### site_description
 
 Set the site description. This will add a meta tag to the generated HTML header.
@@ -60,17 +110,6 @@ Set the site description. This will add a meta tag to the generated HTML header.
 
 Set the name of the author. This will add a meta tag to the generated HTML
 header.
-
-**default**: `null`
-
-### site_favicon
-
-Set the favicon to use. Putting a `favicon.ico` into the `docs/` directory, the
-config would look as follows:
-
-```yaml
-site_favicon: favicon.ico
-```
 
 **default**: `null`
 
@@ -102,7 +141,7 @@ Pages. This option can be overridden by a command line option in `gh-deploy`.
 Set the remote name to push to when using `gh-deploy` to deploy to Github Pages.
 This option can be overridden by a command line option in `gh-deploy`.
 
-**default**: `gh-pages`
+**default**: `origin`
 
 ## Documentation layout
 
@@ -120,16 +159,19 @@ pages:
     - 'About': 'about.md'
 ```
 
-See the section on [configuring pages and
-navigation](/user-guide/writing-your-docs.md#configure-pages-and-navigation) for
-a more detailed breakdown, including how to create sub-sections.
+See the section on [configuring pages and navigation] for a more detailed
+breakdown, including how to create sub-sections.
+
+**default**: By default `pages` will contain an alphanumerically sorted, nested
+list of all the Markdown files found within the `docs_dir` and its
+sub-directories. If none are found it will be `[]` (an empty list).
 
 ## Build directories
 
 ### theme
 
 Sets the theme of your documentation site, for a list of available themes visit
-[styling your docs](styling-your-docs.md).
+[styling your docs].
 
 **default**: `'mkdocs'`
 
@@ -139,8 +181,11 @@ Lets you set a directory to a custom theme. This can either be a relative
 directory, in which case it is resolved relative to the directory containing
 your configuration file, or it can be an absolute directory path.
 
-See [styling your docs](styling-your-docs.md#custom-themes) for an explanation
-of custom themes.
+See [styling your docs][theme_dir] for details if you would like to tweak an
+existing theme.
+
+See [custom themes] if you would like to build your own theme from the ground
+up.
 
 **default**: `null`
 
@@ -148,8 +193,8 @@ of custom themes.
 
 Lets you set the directory containing the documentation source markdown files.
 This can either be a relative directory, in which case it is resolved relative
-to the directory containing you configuration file, or it can be an absolute
-directory path.
+to the directory containing your configuration file, or it can be an absolute
+directory path from the root of your local file system.
 
 **default**: `'docs'`
 
@@ -157,8 +202,8 @@ directory path.
 
 Lets you set the directory where the output HTML and other files are created.
 This can either be a relative directory, in which case it is resolved relative
-to the directory containing you configuration file, or it can be an absolute
-directory path.
+to the directory containing your configuration file, or it can be an absolute
+directory path from the root of your local file system.
 
 **default**: `'site'`
 
@@ -173,12 +218,11 @@ directory path.
     If you're using another source code control tool, you'll want to check its
     documentation on how to ignore specific directories.
 
-
 ### extra_css
 
-Set a list of CSS files to be included by the theme. For example, the
-following example will include the the extra.css file within the css
-subdirectory in your [docs_dir](#docs_dir).
+Set a list of CSS files in your `docs_dir` to be included by the theme. For
+example, the following example will include the extra.css file within the
+css subdirectory in your [docs_dir](#docs_dir).
 
 ```yaml
 extra_css:
@@ -186,27 +230,23 @@ extra_css:
     - css/second_extra.css
 ```
 
-**default**: By default `extra_css` will contain a list of all the CSS files
-found within the `docs_dir`, if none are found it will be `[]` (an empty list).
+**default**: `[]` (an empty list).
 
 ### extra_javascript
 
-Set a list of JavaScript files to be included by the theme. See the example
-in [extra_css](#extra_css) for usage.
+Set a list of JavaScript files in your `docs_dir` to be included by the theme.
+See the example in [extra_css] for usage.
 
-**default**: By default `extra_javascript` will contain a list of all the
-JavaScript files found within the `docs_dir`, if none are found it will be `[]`
-(an empty list).
+**default**: `[]` (an empty list).
 
 ### extra_templates
 
-Set a list of templates to be built by MkDocs. To see more about writing
-templates for MkDocs read the documentation about [custom themes] and
-specifically the section about the [variables that are available] to templates.
-See the example in [extra_css](#extra_css) for usage.
+Set a list of templates in your `docs_dir` to be built by MkDocs. To see more
+about writing templates for MkDocs read the documentation about [custom themes]
+and specifically the section about the [variables that are available] to
+templates. See the example in [extra_css] for usage.
 
-**default**: Unlike extra_css and extra_javascript, by default `extra_templates`
-will be `[]` (an empty list).
+**default**: `[]` (an empty list).
 
 ### extra
 
@@ -305,9 +345,9 @@ markdown_extensions:
 ```
 
 Note that a colon (`:`) must follow the extension name (`toc`) and then on a new
-line the option name and value must be indented and seperated by a colon. If you
-would like to define multipe options for a single extension, each option must be
-defined on a seperate line:
+line the option name and value must be indented and separated by a colon. If you
+would like to define multiple options for a single extension, each option must be
+defined on a separate line:
 
 ```yaml
 markdown_extensions:
@@ -339,10 +379,14 @@ markdown_extensions:
 
 **default**: `[]`
 
-[custom themes]: /user-guide/styling-your-docs.md#custom-themes
-[variables that are available]: /user-guide/styling-your-docs.md#global-context
-[pymdk-extensions]: http://pythonhosted.org/Markdown/extensions/index.html
-[pymkd]: http://pythonhosted.org/Markdown/
+[custom themes]: custom-themes.md
+[variables that are available]: custom-themes.md#template-variables
+[pymdk-extensions]: https://pythonhosted.org/Markdown/extensions/index.html
+[pymkd]: https://pythonhosted.org/Markdown/
 [smarty]: https://pythonhosted.org/Markdown/extensions/smarty.html
 [exts]:https://pythonhosted.org/Markdown/extensions/index.html
 [3rd]: https://github.com/waylan/Python-Markdown/wiki/Third-Party-Extensions
+[configuring pages and navigation]: writing-your-docs.md#configure-pages-and-navigation
+[theme_dir]: styling-your-docs.md#using-the-theme_dir
+[styling your docs]: styling-your-docs.md
+[extra_css]: #extra_css

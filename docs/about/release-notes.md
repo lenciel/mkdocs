@@ -11,9 +11,256 @@ To upgrade MkDocs to the latest version, use pip:
 You can determine your currently installed version using `mkdocs --version`:
 
     $ mkdocs --version
-    mkdocs, version 0.14.0
+    mkdocs, version 0.15.2
 
-## Version 0.15.0 (2015-??-??)
+## Maintenance team
+
+The current and past members of the MkDocs team.
+
+* [@tomchristie](https://github.com/tomchristie/)
+* [@d0ugal](https://github.com/d0ugal/)
+* [@waylan](https://github.com/waylan/)
+
+## Version 0.16.3 (2017-04-04)
+
+* Fix error raised by autoscrolling in the readthedocs theme (#1177)
+* Fix a few documentation typos (#1181 & #1185)
+* Fix a regression to livereload server introduced in 0.16.2 (#1174)
+
+## Version 0.16.2 (2017-03-13)
+
+* System root (`/`) is not a valid path for site_dir or docs_dir (#1161)
+* Refactor readthedocs theme navigation (#1155 & #1156)
+* Add support to dev server to serve custom error pages (#1040)
+* Ensure nav.homepage.url is not blank on error pages (#1131)
+* Increase livereload dependency to 2.5.1 (#1106)
+
+## Version 0.16.1 (2016-12-22)
+
+* Ensure scrollspy behavior does not affect nav bar (#1094)
+* Only "load" a theme when it is explicitly requested by the user (#1105)
+
+## Version 0.16 (2016-11-04)
+
+### Major Additions to Version 0.16.0
+
+#### Template variables refactored. (#874)
+
+##### Page Context
+
+Page specific variable names in the template context have been refactored as
+defined in [Custom Themes](../user-guide/custom-themes/#page). The
+old variable names will issue a warning but continue to work for version 0.16,
+but may be removed in a future version.
+
+Any of the following old page variables should be updated to the new ones in
+user created and third-party templates:
+
+| Old Variable Name | New Variable Name   |
+| ----------------- | ------------------- |
+| current_page      | [page]              |
+| page_title        | [page.title]        |
+| content           | [page.content]      |
+| toc               | [page.toc]          |
+| meta              | [page.meta]         |
+| canonical_url     | [page.canonical_url]|
+| previous_page     | [page.previous_page]|
+| next_page         | [page.next_page]    |
+
+[page]: ../user-guide/custom-themes/#page
+[page.title]: ../user-guide/custom-themes/#pagetitle
+[page.content]: ../user-guide/custom-themes/#pagecontent
+[page.toc]: ../user-guide/custom-themes/#pagetoc
+[page.meta]: ../user-guide/custom-themes/#pagemeta
+[page.canonical_url]: ../user-guide/custom-themes/#pagecanonical_url
+[page.previous_page]: ../user-guide/custom-themes/#pageprevious_page
+[page.next_page]: ../user-guide/custom-themes/#pagenext_page
+
+##### Global Context
+
+Additionally, a number of global variables have been altered and/or deprecated
+and user created and third-party templates should be updated as outlined below:
+
+Previously, the global variable `include_nav` was altered programmatically based
+on the number of pages in the nav. The variable will issue a warning but
+continue to work for version 0.16, but may be removed in a future version. Use
+`{% if nav|length>1 %}` instead.
+
+Previously, the global variable `include_next_prev` was altered programmatically
+based on the number of pages in the nav. The variable will issue a warning but
+continue to work for version 0.16, but may be removed in a future version. Use
+`{% if page.next_page or page.previous_page %}` instead.
+
+Previously the global variable `page_description` was altered programmatically
+based on whether the current page was the homepage. Now it simply maps to
+`config['site_description']`. Use `{% if page.is_homepage %}` in the template to
+conditionally change the description.
+
+The global variable `homepage_url` maps directly to `nav.homepage.url` and is
+being deprecated. The variable will issue a warning but continue to work for
+version 0.16, but may be removed in a future version. Use `nav.homepage.url`
+instead.
+
+The global variable `favicon` maps to the configuration setting `site_favicon`.
+Both the template variable and the configuration setting are being deprecated
+and will issue a warning but continue to work for version 0.16, and may be
+removed in a future version. Use `{{ base_url }}/img/favicon.ico` in your
+template instead. Users can simply save a copy of their custom favicon icon to
+`img/favicon.ico` in either their `docs_dir` or `theme_dir`.
+
+A number of variables map directly to similarly named variables in the `config`.
+Those variables are being deprecated and will issue a warning but continue to
+work for version 0.16, but may be removed in a future version. Use
+`config.var_name` instead, where `var_name` is the name of one of the
+[configuration] variables.
+
+[configuration]: /user-guide/configuration.md
+
+Below is a summary of all of the changes made to the global context:
+
+| Old Variable Name | New Variable Name or Expression        |
+| ----------------- | -------------------------------------- |
+| current_page      | page                                   |
+| include_nav       | nav&#124;length&gt;1                   |
+| include_next_prev | (page.next_page or page.previous_page) |
+| site_name         | config.site_name                       |
+| site_author       | config.site_author                     |
+| page_description  | config.site_description                |
+| repo_url          | config.repo_url                        |
+| repo_name         | config.repo_name                       |
+| site_url          | config.site_url                        |
+| copyright         | config.copyright                       |
+| google_analytics  | config.google_analytics                |
+| homepage_url      | nav.homepage.url                       |
+| favicon           | {{ base_url }}/img/favicon.ico         |
+
+#### Increased Template Customization. (#607)
+
+The built-in themes have been updated by having each of their many parts wrapped
+in template blocks which allow each individual block to be easily overridden
+using the `theme_dir` config setting. Without any new settings, you can use a
+different analytics service, replace the default search function, or alter the
+behavior of the navigation, among other things. See the relevant
+[documentation][blocks] for more details.
+
+To enable this feature, the primary entry point for page templates has been
+changed from `base.html` to `main.html`. This allows `base.html` to continue to
+exist while allowing users to override `main.html` and extend `base.html`. For
+version 0.16, `base.html` will continue to work if no `main.html` template
+exists, but it is deprecated and will raise a warning. In version 1.0, a build
+will fail if no `main.html` template exists. Any custom and third party
+templates should be updated accordingly.
+
+The easiest way for a third party theme to be updated would be to simply add a
+`main.html` file which only contains the following line:
+
+```django
+{% extends "base.html" %}
+```
+
+That way, the theme contains the `main.html` entry point, and also supports
+overriding blocks in the same manner as the built-in themes. Third party themes
+are encouraged to wrap the various pieces of their templates in blocks in order
+to support such customization.
+
+[blocks]: ../user-guide/styling-your-docs/#overriding-template-blocks
+
+#### Auto-Populated `extra_css` and `extra_javascript` Deprecated. (#986)
+
+In previous versions of MkDocs, if the `extra_css` or `extra_javascript` config
+settings were empty, MkDocs would scan the `docs_dir` and auto-populate each
+setting with all of the CSS and JavaScript files found. This behavior is
+deprecated and a warning will be issued. In the next release, the auto-populate
+feature will stop working and any unlisted CSS and JavaScript files will not be
+included in the HTML templates. In other words, they will still be copied to the
+`site-dir`, but they will not have any effect on the theme if they are not
+explicitly listed.
+
+All CSS and javaScript files in the `docs_dir` should be explicitly listed in
+the `extra_css` or `extra_javascript` config settings going forward.
+
+#### Support for dirty builds. (#990)
+
+For large sites the build time required to create the pages can become problematic,
+thus a "dirty" build mode was created. This mode simply compares the modified time
+of the generated HTML and source markdown. If the markdown has changed since the
+HTML then the page is re-constructed. Otherwise, the page remains as is. This mode
+may be invoked in both the `mkdocs serve` and `mkdocs build` commands:
+
+```text
+mkdocs serve --dirtyreload
+```
+
+```text
+mkdocs build --dirty
+```
+
+It is important to note that this method for building the pages is for development
+of content only, since the navigation and other links do not get updated on other
+pages.
+
+#### Stricter Directory Validation
+
+Previously, a warning was issued if the `site_dir` was a child directory of the
+`docs_dir`. This now raises an error. Additionally, an error is now raised if
+the `docs_dir` is set to the directory which contains your config file rather
+than a child directory. You will need to rearrange you directory structure to
+better conform with the documented [layout].
+
+[layout]: ../user-guide/writing-your-docs/#file-layout
+
+### Other Changes and Additions to Version 0.16.0
+
+* Bugfix: Support `gh-deploy` command on Windows with Python 3 (#722)
+* Bugfix: Include .woff2 font files in Python package build (#894)
+* Various updates and improvements to Documentation Home Page/Tutorial (#870)
+* Bugfix: Support livereload for config file changes (#735)
+* Bugfix: Non-media template files are no longer copied with media files (#807)
+* Add a flag (-e/--theme-dir) to specify theme directory with the commands
+  `mkdocs build` and `mkdocs serve` (#832)
+* Fixed issues with Unicode file names under Windows and Python 2. (#833)
+* Improved the styling of in-line code in the MkDocs theme. (#718)
+* Bugfix: convert variables to JSON when being passed to JavaScript (#850)
+* Updated the ReadTheDocs theme to match the upstream font sizes and colors
+  more closely. (#857)
+* Fixes an issue with permalink markers showing when the mouse was far above
+  them (#843)
+* Bugfix: Handle periods in directory name when automatically creating the
+  pages config. (#728)
+* Update searching to Lunr 0.7, which comes with some performance enhancements
+  for larger documents (#859)
+* Bugfix: Support SOURCE_DATE_EPOCH environment variable for "reproducible"
+  builds (#938)
+* Follow links when copying media files (#869).
+* Change "Edit on..." links to point directly to the file in the source
+  repository, rather than to the root of the repository (#975), configurable
+  via the new [`edit_uri`](../user-guide/configuration.md#edit_uri) setting.
+* Bugfix: Don't override config value for strict mode if not specified on CLI
+  (#738).
+* Add a `--force` flag to the `gh-deploy` command to force the push to the
+  repository (#973).
+* Improve alignment for current selected menu item in readthedocs theme (#888).
+* `http://user.github.io/repo` => `https://user.github.io/repo/` (#1029).
+* Improve installation instructions (#1028).
+* Account for wide tables and consistently wrap inline code spans (#834).
+* Bugfix: Use absolute URLs in nav & media links from error templates (#77).
+
+## Version 0.15.3 (2016-02-18)
+
+* Improve the error message the given theme can't be found.
+* Fix an issue with relative symlinks (#639)
+
+## Version 0.15.2 (2016-02-08)
+
+* Fix an incorrect warning that states external themes [will be removed from
+  MkDocs](#add-support-for-installable-themes).
+
+## Version 0.15.1 (2016-01-30)
+
+* Lower the minimum supported Click version to 3.3 for package maintainers.
+  (#763)
+
+## Version 0.15.0 (2016-01-21)
 
 ### Major Additions to Version 0.15.0
 
@@ -30,7 +277,7 @@ details about these specific themes.
 [MkDocs Bootstrap]: http://mkdocs.github.io/mkdocs-bootstrap/
 [MkDocs Bootswatch]: http://mkdocs.github.io/mkdocs-bootswatch/
 
-They will be included with MkDocs by default until the 1.0 release. After that
+They will be included with MkDocs by default until a future release. After that
 they will be installable with pip: `pip install mkdocs-bootstrap` and `pip
 install mkdocs-bootswatch`
 

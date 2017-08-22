@@ -4,6 +4,12 @@ A guide to creating and distributing custom themes.
 
 ---
 
+!!! Note
+
+    If you are looking for third party themes, they are listed in the MkDocs
+    [community wiki](https://github.com/mkdocs/mkdocs/wiki/MkDocs-Themes). If
+    you want to share a theme you create, you should list it on the Wiki.
+
 When creating a new theme, you can either follow the steps in this guide to
 create one from scratch or you can download the `mkdocs-basic-theme` as a
 basic, yet complete, theme with all the boilerplate required. **You can find
@@ -13,11 +19,11 @@ and their usage.
 
 ## Creating a custom theme
 
-The bare minimum required for a custom theme is a `base.html` [Jinja2
+The bare minimum required for a custom theme is a `main.html` [Jinja2
 template] file. This should be placed in a directory which will be the
 `theme_dir` and it should be created next to the `mkdocs.yml` configuration
 file. Within `mkdocs.yml`, specify the `theme_dir` option and set it to the
-name of the directory containing `base.html`. For example, given this example
+name of the directory containing `main.html`. For example, given this example
 project layout:
 
     mkdocs.yml
@@ -25,22 +31,33 @@ project layout:
         index.md
         about.md
     custom_theme/
-        base.html
+        main.html
         ...
 
-You would include the following setting to use the custom theme directory:
+You would include the following settings in `mkdocs.yml` to use the custom theme
+directory:
 
+    theme: null
     theme_dir: 'custom_theme'
 
-If used in combination with the `theme` configuration value a custom theme can
-be used to replace only specific parts of a built-in theme. For example, with
-the above layout and if you set `theme: mkdocs` then the `base.html` file
-would replace that in the theme but otherwise it would remain the same. This
-is useful if you want to make small adjustments to an existing theme.
+!!! Note
+
+    Generally, when building your own custom theme, the `theme` configuration
+    setting would be set to `null`. However, if used in combination with the
+    `theme_dir` configuration value a custom theme can be used to replace only
+    specific parts of a built-in theme. For example, with the above layout and
+    if you set `theme: "mkdocs"` then the `main.html` file in the `theme_dir`
+    would replace that in the theme but otherwise the `mkdocs` theme would
+    remain the same. This is useful if you want to make small adjustments to an
+    existing theme.
+
+    For more specific information, see [styling your docs].
+
+[styling your docs]: ./styling-your-docs.md#using-the-theme_dir
 
 ## Basic theme
 
-The simplest `base.html` file is the following:
+The simplest `main.html` file is the following:
 
 ```django
 <!DOCTYPE html>
@@ -55,11 +72,28 @@ The simplest `base.html` file is the following:
 ```
 
 Article content from each page specified in `mkdocs.yml` is inserted using the
-`{{ content }}` tag. Stylesheets and scripts can be brought into this theme as
+`{{ content }}` tag. Style-sheets and scripts can be brought into this theme as
 with a normal HTML file. Navbars and tables of contents can also be generated
 and included automatically, through the `nav` and `toc` objects, respectively.
 If you wish to write your own theme, it is recommended to start with one of
 the [built-in themes] and modify it accordingly.
+
+!!! Note
+
+    As MkDocs uses [Jinja] as its template engine, you have access to all the
+    power of Jinja, including [template inheritance]. You may notice that the
+    themes included with MkDocs make extensive use of template inheritance and
+    blocks, allowing users to easily override small bits and pieces of the
+    templates from the [theme_dir]. Therefore, the built-in themes are
+    implemented in a `base.html` file, which `main.html` extends. Although not
+    required, third party template authors are encouraged to follow a similar
+    pattern and may want to define the same [blocks] as are used in the built-in
+    themes for consistency.
+
+[Jinja]: http://jinja.pocoo.org/
+[template inheritance]: http://jinja.pocoo.org/docs/dev/templates/#template-inheritance
+[theme_dir]: ./styling-your-docs.md#using-the-theme_dir
+[blocks]: ./styling-your-docs.md#overriding-template-blocks
 
 ## Template Variables
 
@@ -72,42 +106,22 @@ example a 404.html page or search.html.
 
 ### Global Context
 
-The following variables in the context map directly the [configuration options
-](/user-guide/configuration.md).
+The following variables are available globally on any template.
 
-Variable Name     | Configuration name
------------------ | ------------------- |
-site_name         | [site_name]           |
-site_author       | [site_author]         |
-favicon           | [site_favicon]        |
-page_description  | [site_description]    |
-repo_url          | [repo_url]            |
-repo_name         | [repo_name]           |
-site_url          | [site_url]            |
-extra_css         | [extra_css]           |
-extra_javascript  | [extra_javascript]    |
-extra             | [extra]               |
-include_nav       | [include_nav]         |
-include_next_prev | [include_next_prev]   |
-copyright         | [copyright]           |
-google_analytics  | [google_analytics]    |
+#### config
 
-[site_name]: ./configuration.md#site_name
-[site_author]: ./configuration.md#site_author
-[site_favicon]: ./configuration.md#site_favicon
-[site_description]: ./configuration.md#site_description
-[repo_url]: ./configuration.md#repo_url
-[repo_name]: ./configuration.md#repo_name
-[site_url]: ./configuration.md#site_url
-[extra_css]: ./configuration.md#extra_css
-[extra_javascript]: ./configuration.md#extra_javascript
-[extra]: ./configuration.md#extra
-[include_nav]: ./configuration.md#include_nav
-[include_next_prev]: ./configuration.md#include_next_prev
-[copyright]: ./configuration.md#copyright
-[google_analytics]: ./configuration.md#google_analytics
+The `config` variable is an instance of MkDocs' config object generated from the
+`mkdocs.yml` config file. While you can use any config option, some commonly
+used options include:
 
-The following variables provide information about the navigation and location.
+* [config.site_name](./configuration.md#site_name)
+* [config.site_url](./configuration.md#site_url)
+* [config.site_author](./configuration.md#site_author)
+* [config.site_description](./configuration.md#site_description)
+* [config.repo_url](./configuration.md#repo_url)
+* [config.repo_name](./configuration.md#repo_name)
+* [config.copyright](./configuration.md#copyright)
+* [config.google_analytics](./configuration.md#google_analytics)
 
 #### nav
 
@@ -116,27 +130,31 @@ Following is a basic usage example which outputs the first and second level
 navigation as a nested list.
 
 ```django
-<ul>
-  {% for nav_item in nav %}
-      {% if nav_item.children %}
-          <li>{{ nav_item.title }}
-              <ul>
-              {% for nav_item in nav_item.children %}
-                  <li class="{% if nav_item.active%}current{%endif%}">
-                      <a href="{{ nav_item.url }}">{{ nav_item.title }}</a>
-                  </li>
-              {% endfor %}
-              </ul>
-          </li>
-      {% else %}
-          <li class="{% if nav_item.active%}current{%endif%}">
-              <a href="{{ nav_item.url }}">{{ nav_item.title }}</a>
-          </li>
-      {% endif %}
-
-  {% endfor %}
-</ul>
+{% if nav|length>1 %}
+    <ul>
+    {% for nav_item in nav %}
+        {% if nav_item.children %}
+            <li>{{ nav_item.title }}
+                <ul>
+                {% for nav_item in nav_item.children %}
+                    <li class="{% if nav_item.active%}current{%endif%}">
+                        <a href="{{ nav_item.url }}">{{ nav_item.title }}</a>
+                    </li>
+                {% endfor %}
+                </ul>
+            </li>
+        {% else %}
+            <li class="{% if nav_item.active%}current{%endif%}">
+                <a href="{{ nav_item.url }}">{{ nav_item.title }}</a>
+            </li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+{% endif %}
 ```
+
+The `nav` object also contains a `homepage` object, which points to the `page`
+object of the homepage. For example, you may want to access `nav.homepage.url`.
 
 #### base_url
 
@@ -149,9 +167,21 @@ folder on all pages you would do this:
 <script src="{{ base_url }}/js/theme.js"></script>
 ```
 
-#### homepage_url
+#### extra_css
 
-Provides a relative path to the documentation homepage.
+Contains a list of URLs to the style-sheets listed in the [extra_css]
+config setting. Unlike the config setting, which contains local paths, this
+variable contains absolute paths from the homepage.
+
+[extra_css]: configuration.md#extra_css
+
+#### extra_javascript
+
+Contains a list of URLs to the scripts listed in the [extra_javascript] config
+setting. Unlike the config setting, which contains local paths, this variable
+contains absolute paths from the homepage.
+
+[extra_javascript]: configuration.md#extra_javascript
 
 #### mkdocs_version
 
@@ -163,32 +193,28 @@ A Python datetime object that represents the date and time the documentation
 was built in UTC. This is useful for showing how recently the documentation
 was updated.
 
-### Page Context
+#### page
 
-The page context includes all of the above Global context and the following
-additional variables.
+In templates which are not rendered from a Markdown source file, the `page`
+variable is `None`. In templates which are rendered from a Markdown source file,
+the `page` variable contains a page object with the following attributes:
 
-#### page_title
+##### page.title
 
 Contains the Title for the current page.
 
-#### page_description
-
-Contains the description for the current page on the homepage, it is blank on
-other pages.
-
-#### content
+##### page.content
 
 The rendered Markdown as HTML, this is the contents of the documentation.
 
-#### toc
+##### page.toc
 
 An object representing the Table of contents for a page. Displaying the table
 of contents as a simple list can be achieved like this.
 
 ```django
 <ul>
-{% for toc_item in toc %}
+{% for toc_item in page.toc %}
     <li><a href="{{ toc_item.url }}">{{ toc_item.title }}</a></li>
     {% for toc_item in toc_item.children %}
         <li><a href="{{ toc_item.url }}">{{ toc_item.title }}</a></li>
@@ -197,7 +223,7 @@ of contents as a simple list can be achieved like this.
 </ul>
 ```
 
-#### meta
+##### page.meta
 
 A mapping of the metadata included at the top of the markdown page. In this
 example we define a `source` property above the page title.
@@ -216,36 +242,46 @@ variable. This could then be used to link to source files related to the
 documentation page.
 
 ```django
-{% for filename in meta.source %}
+{% for filename in page.meta.source %}
   <a class="github" href="https://github.com/.../{{ filename }}">
     <span class="label label-info">{{ filename }}</span>
   </a>
 {% endfor %}
 ```
 
-#### canonical_url
+##### page.canonical_url
 
-The full, canonical URL to the current page. This includes the site_url from
+The full, canonical URL to the current page. This includes the `site_url` from
 the configuration.
 
-#### current_page
+##### page.edit_url
 
-The page object for the current page. The page path and url properties can be
-displayed like this.
+The full URL to the input page in the source repository. Typically used to
+provide a link to edit the source page.
+
+##### page.url
+
+The URL to the current page not including the `site_url` from the configuration.
+
+##### page.is_homepage
+
+Evaluates to `True` for the homepage of the site and `False` for all other
+pages. This can be used in conjunction with other attributes of the `page`
+object to alter the behavior. For example, to display a different title
+on the homepage:
 
 ```django
-<h1>{{ current_page.title }}</h1>
-<p> This page is at {{ current_page.url }}</p>
+{% if not page.is_homepage %}{{ page.title }} - {% endif %}{{ site_name }}
 ```
 
-#### previous_page
+##### page.previous_page
 
 The page object for the previous  page. The usage is the same as for
-`current_page`.
+`page`.
 
-#### next_page
+##### page.next_page
 
-The page object for the next page.The usage is the same as for `current_page`.
+The page object for the next page.The usage is the same as for `page`.
 
 ### Extra Context
 
@@ -286,7 +322,7 @@ As of MkDocs `0.13` client side search support has been added to MkDocs with
 [Lunr.js].
 
 Search can either be added to every page in the theme or to a dedicated
-template which must be named `search.html`. The search template will be build
+template which must be named `search.html`. The search template will be built
 with the same name and can be viewable with `mkdocs serve` at
 `http://localhost:8000/search.html`. An example of the two different
 approaches can be seen by comparing the `mkdocs` and `readthedocs` themes.
@@ -341,6 +377,16 @@ To see an example of a package containing one theme, see the [MkDocs Bootstrap
 theme] and to see a package that contains many themes, see the [MkDocs
 Bootswatch theme].
 
+!!! Note
+
+    It is not strictly necessary to package a theme, as the entire theme
+    can be contained in the `theme_dir`. If you have created a "one-off theme,"
+    that should be sufficent. However, if you intend to distribute your theme
+    for others to use, packaging the theme has some advantages. By packaging
+    your theme, your users can more easily install it and they can them take
+    advantage of the [theme_dir] to make tweaks to your theme to better suit
+    their needs.
+
 [Python packaging]: https://packaging.python.org/en/latest/
 [MkDocs Bootstrap theme]: http://mkdocs.github.io/mkdocs-bootstrap/
 [MkDocs Bootswatch theme]: http://mkdocs.github.io/mkdocs-bootswatch/
@@ -348,15 +394,16 @@ Bootswatch theme].
 ### Package Layout
 
 The following layout is recommended for themes. Two files at the top level
-directory called `MANIFEST.in` amd `setup.py`. Then a directory with the name
-of your theme and containing a `base.html` file and a `__init__.py`.
+directory called `MANIFEST.in` amd `setup.py` beside the theme directory which
+contains an empty `__init__.py` file and your template and media files.
 
 ```no-highlight
 .
 |-- MANIFEST.in
 |-- theme_name
-|   |-- base.html
 |   |-- __init__.py
+|   |-- main.html
+|   |-- styles.css
 `-- setup.py
 ```
 
@@ -409,9 +456,9 @@ including in the package. The name on the left is the one that users will use
 in their mkdocs.yml and the one on the right is the directory containing your
 theme files.
 
-The directory you created at the start of this section with the base.html file
+The directory you created at the start of this section with the main.html file
 should contain all of the other theme files. The minimum requirement is that
-it includes a `base.html` for the theme. It **must** also include a
+it includes a `main.html` for the theme. It **must** also include a
 `__init__.py` file which should be empty, this file tells Python that the
 directory is a package.
 
@@ -433,4 +480,4 @@ If you don't have an account setup, you should be prompted to create one.
 For a much more detailed guide, see the official Python packaging
 documentation for [Packaging and Distributing Projects].
 
-[Packaging and Distributing Projects]: https://packaging.python.org/en/latest/distributing.html
+[Packaging and Distributing Projects]: https://packaging.python.org/en/latest/distributing/

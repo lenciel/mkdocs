@@ -12,7 +12,7 @@ the primary working branch (usually `master`) of the git repository where you
 maintain the source documentation for your project, run the following command:
 
 ```sh
-mkdocs gh-deploy --clean
+mkdocs gh-deploy
 ```
 
 That's it! Behind the scenes, MkDocs will build your docs and use the [ghp-import]
@@ -54,8 +54,8 @@ public repository.
     specific themes and will not work with MkDocs.
 
 [rtd]: https://readthedocs.org/
-[instructions]: https://read-the-docs.readthedocs.org/en/latest/getting_started.html#in-markdown
-[features]: http://read-the-docs.readthedocs.org/en/latest/features.html
+[instructions]: https://read-the-docs.readthedocs.io/en/latest/getting_started.html#in-markdown
+[features]: http://read-the-docs.readthedocs.io/en/latest/features.html
 [theme]: /user-guide/styling-your-docs.md
 
 ## PyPI
@@ -66,11 +66,11 @@ host documentation for your project. Run the following commands from your
 project's root directory to upload your documentation:
 
 ```sh
-mkdocs build --clean
+mkdocs build
 python setup.py upload_docs --upload-dir=site
 ```
 
-You documentation will be hosted at `http://pythonhosted.org/<projectname>/`
+Your documentation will be hosted at `https://pythonhosted.org/<projectname>/`
 where `<projectname>` is the name you used to register your project with PyPI.
 
 There are a few prerequisites for the above to work:
@@ -88,8 +88,8 @@ There are a few prerequisites for the above to work:
 
 [Python]: http://www.python.org/
 [PyPI]: https://pypi.python.org/pypi
-[pythonhosted.org]: http://pythonhosted.org/
-[Setuptools]: http://pythonhosted.org/setuptools/
+[pythonhosted.org]: https://pythonhosted.org/
+[Setuptools]: https://pythonhosted.org/setuptools/
 [Distutils]: https://docs.python.org/2/distutils/
 [docs_dir]: configuration.md#docs_dir
 [site_dir]: configuration.md#site_dir
@@ -113,8 +113,8 @@ For example, a typical set of commands from the command line might look
 something like this:
 
 ```sh
-mkdocs build --clean
-scp -r ./site usr@host:/path/to/server/root
+mkdocs build
+scp -r ./site user@host:/path/to/server/root
 ```
 
 Of course, you will need to replace `user` with the username you have with your
@@ -129,3 +129,12 @@ your hosts' file system.
 See your host's documentation for specifics. You will likely want to search
 their documentation for "ftp" or "uploading site".
 
+## 404 Pages
+
+When MkDocs builds the documentation it will include a 404.html file in the
+[build directory][site_dir]. This file will be automatically used when
+deploying to [GitHub](#github-pages) but only on a custom domain. Other web
+servers may be configured to use it but the feature won't always be available.
+See the documentation for your server of choice for more information.
+
+[site_dir]: ./configuration/#site_dir

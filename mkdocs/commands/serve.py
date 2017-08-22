@@ -1,12 +1,32 @@
 from __future__ import unicode_literals
+
 import logging
 import shutil
 import tempfile
 
+from os.path import isfile, join
 from mkdocs.commands.build import build
 from mkdocs.config import load_config
 
 log = logging.getLogger(__name__)
+
+
+def _get_handler(site_dir, StaticFileHandler):
+
+    from tornado.template import Loader
+
+    class WebHandler(StaticFileHandler):
+
+        def write_error(self, status_code, **kwargs):
+
+            if status_code in (404, 500):
+                error_page = '{}.html'.format(status_code)
+                if isfile(join(site_dir, error_page)):
+                    self.write(Loader(site_dir).load(error_page).generate())
+                else:
+                    super(WebHandler, self).write_error(status_code, **kwargs)
+
+    return WebHandler
 
 
 def _livereload(host, port, config, builder, site_dir):
@@ -14,8 +34,16 @@ def _livereload(host, port, config, builder, site_dir):
     # We are importing here for anyone that has issues with livereload. Even if
     # this fails, the --no-livereload alternative should still work.
     from livereload import Server
+    import livereload.handlers
 
-    server = Server()
+    class LiveReloadServer(Server):
+
+        def get_web_handlers(self, script):
+            handlers = super(LiveReloadServer, self).get_web_handlers(script)
+            # replace livereload handler
+            return [(handlers[0][0], _get_handler(site_dir, livereload.handlers.StaticFileHandler), handlers[0][2],)]
+
+    server = LiveReloadServer()
 
     # Watch the documentation files, the config file and the theme files.
     server.watch(config['docs_dir'], builder)
@@ -24,7 +52,7 @@ def _livereload(host, port, config, builder, site_dir):
     for d in config['theme_dir']:
         server.watch(d, builder)
 
-    server.serve(root=site_dir, host=host, port=int(port), restart_delay=0)
+    server.serve(root=site_dir, host=host, port=port, restart_delay=0)
 
 
 def _static_server(host, port, site_dir):
@@ -35,7 +63,7 @@ def _static_server(host, port, site_dir):
     from tornado import web
 
     application = web.Application([
-        (r"/(.*)", web.StaticFileHandler, {
+        (r"/(.*)", _get_handler(site_dir, web.StaticFileHandler), {
             "path": site_dir,
             "default_filename": "index.html"
         }),
@@ -51,7 +79,7 @@ def _static_server(host, port, site_dir):
 
 
 def serve(config_file=None, dev_addr=None, strict=None, theme=None,
-          livereload=True):
+          theme_dir=None, livereload='livereload'):
     """
     Start the MkDocs development server
 
@@ -59,6 +87,7 @@ def serve(config_file=None, dev_addr=None, strict=None, theme=None,
     it will rebuild the documentation and refresh the page automatically
     whenever a file is edited.
     """
+
     # Create a temporary build directory, and set some options to serve it
     tempdir = tempfile.mkdtemp()
 
@@ -69,18 +98,21 @@ def serve(config_file=None, dev_addr=None, strict=None, theme=None,
             dev_addr=dev_addr,
             strict=strict,
             theme=theme,
+            theme_dir=theme_dir
         )
         config['site_dir'] = tempdir
-        build(config, live_server=True, clean_site_dir=True)
+        live_server = livereload in ['dirty', 'livereload']
+        dirty = livereload == 'dirty'
+        build(config, live_server=live_server, dirty=dirty)
         return config
 
-    # Perform the initial build
-    config = builder()
-
-    host, port = config['dev_addr'].split(':', 1)
-
     try:
-        if livereload:
+        # Perform the initial build
+        config = builder()
+
+        host, port = config['dev_addr']
+
+        if livereload in ['livereload', 'dirty']:
             _livereload(host, port, config, builder, tempdir)
         else:
             _static_server(host, port, tempdir)

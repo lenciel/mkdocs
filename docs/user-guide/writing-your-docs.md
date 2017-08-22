@@ -10,7 +10,10 @@ The [pages configuration](/user-guide/configuration.md#pages) in your
 `mkdocs.yml` defines which pages are built by MkDocs and how they appear in the
 documentation navigation. If not provided, the pages configuration will be
 automatically created by discovering all the Markdown files in the
-[documentation directory](/user-guide/configuration.md#docs_dir).
+[documentation directory](/user-guide/configuration.md#docs_dir). An
+automatically created pages configuration will always be sorted
+alphanumerically by file name. You will need to manually define your pages
+configuration if you would like your pages sorted differently.
 
 A simple pages configuration looks like this:
 
@@ -151,7 +154,7 @@ documentation site. These might include images and other media.
 
 For example, if your project documentation needed to include a [GitHub pages
 CNAME
-file](https://help.github.com/articles/setting-up-a-custom-domain-with-pages#setting-the-domain-in-your-repo)
+file](https://help.github.com/articles/using-a-custom-domain-with-github-pages/)
 and a PNG formatted screenshot image then your file layout might look as
 follows:
 
@@ -208,7 +211,7 @@ Specify alignment for each column by adding colons to separator lines:
 
 ```no-highlight
 First Header | Second Header | Third Header
-:----------- | :-----------: | -----------:
+:----------- |:-------------:| -----------:
 Left         | Center        | Right
 Left         | Center        | Right
 ```
@@ -220,7 +223,7 @@ last line should contain the same number of backtick characters (`` ` ``):
 
 ~~~no-highlight
 ```
-Fenced code blocks are like Stardard
+Fenced code blocks are like Standard
 Markdown’s regular code blocks, except that
 they’re not indented and instead rely on
 start and end fence lines to delimit the

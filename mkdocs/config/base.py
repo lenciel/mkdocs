@@ -64,21 +64,47 @@ class Config(utils.UserDict):
 
     def _pre_validate(self):
 
+        failed, warnings = [], []
+
         for key, config_option in self._schema:
-            config_option.pre_validation(self, key_name=key)
+            try:
+                config_option.pre_validation(self, key_name=key)
+                warnings.extend([(key, w) for w in config_option.warnings])
+                config_option.reset_warnings()
+            except ValidationError as e:
+                failed.append((key, e))
+
+        return failed, warnings
 
     def _post_validate(self):
 
+        failed, warnings = [], []
+
         for key, config_option in self._schema:
-            config_option.post_validation(self, key_name=key)
+            try:
+                config_option.post_validation(self, key_name=key)
+                warnings.extend([(key, w) for w in config_option.warnings])
+                config_option.reset_warnings()
+            except ValidationError as e:
+                failed.append((key, e))
+
+        return failed, warnings
 
     def validate(self):
 
-        self._pre_validate()
+        failed, warnings = self._pre_validate()
 
-        failed, warnings = self._validate()
+        run_failed, run_warnings = self._validate()
 
-        self._post_validate()
+        failed.extend(run_failed)
+        warnings.extend(run_warnings)
+
+        # Only run the post validation steps if there are no failures, warnings
+        # are okay.
+        if len(failed) == 0:
+            post_failed, post_warnings = self._post_validate()
+            failed.extend(post_failed)
+            warnings.extend(post_warnings)
 
         return failed, warnings
 
@@ -103,7 +129,11 @@ def _open_config_file(config_file):
     if config_file is None:
         config_file = os.path.abspath('mkdocs.yml')
 
-    log.debug("Loading configuration file: %s", config_file)
+    # If closed file descriptor, get file path to reopen later.
+    if hasattr(config_file, 'closed') and config_file.closed:
+        config_file = config_file.name
+
+    log.debug("Loading configuration file: {0}".format(config_file))
 
     # If it is a string, we can assume it is a path and attempt to open it.
     if isinstance(config_file, utils.string_types):
@@ -112,6 +142,9 @@ def _open_config_file(config_file):
         else:
             raise exceptions.ConfigurationError(
                 "Config file '{0}' does not exist.".format(config_file))
+
+    # Ensure file descriptor is at begining
+    config_file.seek(0)
 
     return config_file
 

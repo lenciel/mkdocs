@@ -33,7 +33,8 @@ DEFAULT_SCHEMA = (
     ('site_author', config_options.Type(utils.string_types)),
 
     # The path to the favicon for a site
-    ('site_favicon', config_options.Type(utils.string_types)),
+    # TODO: remove this in version 1.0
+    ('site_favicon', config_options.Deprecated()),
 
     # The MkDocs theme for the documentation.
     ('theme', config_options.Theme(default='mkdocs')),
@@ -56,8 +57,7 @@ DEFAULT_SCHEMA = (
     ('google_analytics', config_options.Type(list, length=2)),
 
     # The address on which to serve the live reloading docs server.
-    ('dev_addr', config_options.Type(
-        utils.string_types, default='127.0.0.1:8000')),
+    ('dev_addr', config_options.IpAddress(default='127.0.0.1:8000')),
 
     # If `True`, use `<page_name>/index.hmtl` style files with hyperlinks to
     # the directory.If `False`, use `<page_name>.html style file with
@@ -75,6 +75,12 @@ DEFAULT_SCHEMA = (
     # "GitHub" or "Bitbucket" for known url or Hostname for unknown urls.
     ('repo_name', config_options.Type(utils.string_types)),
 
+    # Specify a URI to the docs dir in the project source repo, relative to the
+    # repo_url. When set, a link directly to the page in the source repo will
+    # be added to the generated HTML. If repo_url is not set also, this option
+    # is ignored.
+    ('edit_uri', config_options.Type(utils.string_types)),
+
     # Specify which css or javascript files from the docs directory should be
     # additionally included in the site. Default, List of all .css and .js
     # files in the docs dir.
@@ -86,6 +92,7 @@ DEFAULT_SCHEMA = (
     # Jinja2 and the global context.
     ('extra_templates', config_options.Extras()),
 
+    # TODO: delete deprecated `include_nav` and `include_next_previous` in version 1.0
     # Determine if the site should include the nav and next/prev elements.
     # Default, True if the site has more than one page, False otherwise.
     ('include_nav', config_options.NumPages()),

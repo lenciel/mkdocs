@@ -13,19 +13,20 @@ configuration file.
 
 ### Host anywhere
 
-Builds completely static HTML sites that you can host on GitHub pages, Amazon
-S3, or anywhere else you choose.
+MkDocs builds completely static HTML sites that you can host on GitHub pages,
+Amazon S3, or [anywhere][deploy] else you choose.
 
 ### Great themes available
 
-There's a stack of good looking themes included by default. Choose from
-bootstrap, readthedocs, or any of the 12 bootswatch themes.
+There's a stack of good looking themes available for MkDocs. Choose between
+the built in themes: [mkdocs] and [readthedocs], select one of the 3rd
+party themes in the [MkDocs wiki], or [build your own].
 
 ### Preview your site as you work
 
-The built-in devserver allows you to preview your documentation as you're
-writing it. It will even auto-reload whenever you save any changes, so all you
-need to do to see your latest edits is refresh your browser.
+The built-in dev-server allows you to preview your documentation as you're
+writing it. It will even auto-reload and refresh your browser whenever you save
+your changes.
 
 ### Easy to customize
 
@@ -36,9 +37,29 @@ the theme.
 
 ## Installation
 
-In order to install MkDocs you'll need [Python] installed on your system, as
-well as the Python package manager, [pip]. You can check if you have these
-already installed like so:
+### Install with a Package Manager
+
+If you have and use a package manager (such as [apt-get], [dnf], [homebrew],
+[yum], [chocolatey], etc.) to install packages on your system, then you may
+want to search for a "MkDocs" package and, if a recent version is available,
+install it with your package manager (check your system's documentation for
+details). That's it, you're done! Skip down to [Getting Started](#getting-started).
+
+If your package manager does not have a recent "MkDocs" package, you can still
+use your package manager to install "Python" and "pip". Then you can use pip to
+[install MkDocs](#installing-mkdocs).
+
+[apt-get]: https://help.ubuntu.com/community/AptGet/Howto
+[homebrew]: http://brew.sh/
+[dnf]: http://dnf.readthedocs.io/en/latest/index.html
+[yum]: http://yum.baseurl.org/
+[chocolatey]: https://chocolatey.org/
+
+### Manual Installation
+
+In order to manually install MkDocs you'll need [Python] installed on your
+system, as well as the Python package manager, [pip]. You can check if you have
+these already installed from the command line:
 
 ```bash
 $ python --version
@@ -47,9 +68,41 @@ $ pip --version
 pip 1.5.2
 ```
 
-MkDocs supports Python 2.6, 2.7, 3.3 and 3.4.
+MkDocs supports Python versions 2.6, 2.7, 3.3, 3.4, 3.5 and pypy.
 
-On Windows we recommend that you install Python and pip with [Chocolatey].
+#### Installing Python
+
+Install [Python] by downloading an installer appropriate for your system from
+[python.org] and running it.
+
+!!! Note
+
+    If you are installing Python on Windows, be sure to check the box to have
+    Python added to your PATH if the installer offers such an option (it's
+    normally off by default).
+
+    ![Add Python to PATH](img/win-py-install.png)
+
+[python.org]: https://www.python.org/downloads/
+
+#### Installing pip
+
+If you're using a recent version of Python, the Python package manager, [pip],
+is most likely installed by default. However, you may need to upgrade pip to the
+lasted version:
+
+```bash
+pip install --upgrade pip
+```
+
+If you need to install [pip] for the first time, download [get-pip.py].
+Then run the following command to install it:
+
+```bash
+python get-pip.py
+```
+
+#### Installing MkDocs
 
 Install the `mkdocs` package using pip:
 
@@ -62,12 +115,32 @@ You should now have the `mkdocs` command installed on your system. Run `mkdocs
 
 ```bash
 $ mkdocs --version
-mkdocs, version 0.14.0
+mkdocs, version 0.15.3
 ```
+
+!!! Note
+    If you are using Windows, some of the above commands may not work
+    out-of-the-box.
+
+    A quick solution may be to preface every Python command with `python -m`
+    like this:
+
+        python -m pip install mkdocs
+        python -m mkdocs
+
+    For a more permanent solution, you may need to edit your `PATH` environment
+    variable to include the `Scripts` directory of your Python installation.
+    Recent versions of Python include a script to do this for you. Navigate to
+    your Python installation directory (for example `C:\Python34\`), open the
+    `Tools`, then `Scripts` folder, and run the `win_add2path.py` file by double
+    clicking on it. Alternatively, you can [download][a2p] the script and run it
+    (`python win_add2path.py`).
+
+[a2p]: https://svn.python.org/projects/python/trunk/Tools/scripts/win_add2path.py
 
 ---
 
-## Getting started
+## Getting Started
 
 Getting started is super easy.
 
@@ -76,109 +149,136 @@ mkdocs new my-project
 cd my-project
 ```
 
-Let's take a moment to review the initial project that's been created for us.
+Take a moment to review the initial project that has been created for you.
 
 ![The initial MkDocs layout](img/initial-layout.png)
 
 There's a single configuration file named `mkdocs.yml`, and a folder named
-`docs` that will contain our documentation source files. Right now the `docs`
+`docs` that will contain your documentation source files. Right now the `docs`
 folder just contains a single documentation page, named `index.md`.
 
-MkDocs comes with a built-in webserver that lets you preview your documentation
-as you work on it. We start the webserver by making sure we're in the same
-directory as the `mkdocs.yml` config file, and then running the `mkdocs serve`
+MkDocs comes with a built-in dev-server that lets you preview your documentation
+as you work on it. Make sure you're in the same directory as the `mkdocs.yml`
+configuration file, and then start the server by running the `mkdocs serve`
 command:
 
 ```bash
 $ mkdocs serve
-Running at: http://127.0.0.1:8000/
+INFO    -  Building documentation...
+INFO    -  Cleaning site directory
+[I 160402 15:50:43 server:271] Serving on http://127.0.0.1:8000
+[I 160402 15:50:43 handlers:58] Start watching changes
+[I 160402 15:50:43 handlers:60] Start detecting changes
 ```
 
-Open up [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in your browser, and
-you'll see the index page being displayed:
+Open up `http://127.0.0.1:8000/` in your browser, and you'll see the default
+home page being displayed:
 
 ![The MkDocs live server](img/screenshot.png)
 
-The webserver also supports auto-reloading, and will rebuild your documentation
-whenever anything in the configuration file, documentation directory or theme
+The dev-server also supports auto-reloading, and will rebuild your documentation
+whenever anything in the configuration file, documentation directory, or theme
 directory changes.
 
-Go ahead and edit the `docs/index.md` file now and save the file. Then simply
-hit reload in the browser and you'll see your updated documentation.
+Open the `docs/index.md` document in your text editor of choice, change the
+initial heading to `MkLorum`, and save your changes. Your browser will
+auto-reload and you should see your updated documentation immediately.
 
-Now's also a good time to edit the configuration file, `mkdocs.yml`. Change the
-`site_name` setting to something else and save the file.
+Now try editing the configuration file: `mkdocs.yml`. Change the
+[`site_name`][site_name] setting to `MkLorum` and save the file.
 
-![Editing the config file](img/initial-config.png)
+```yaml
+site_name: MkLorum
+```
 
-Once you hit reload in the browser you'll see your new site name take effect.
+Your browser should immediately reload, and you'll see your new site name take
+effect.
 
 ![The site_name setting](img/site-name.png)
 
 ## Adding pages
 
-Go ahead and edit the `docs/index.md` document, and change the initial heading to
-`MkLorum`, then reload the site in your browser, and you should see the change
-take effect immediately.
-
-Let's also add a second page to our documentation:
+Now add a second page to your documentation:
 
 ```bash
-curl 'jaspervdj.be/lorem-markdownum/markdown.txt' > docs/about.md
+curl 'https://jaspervdj.be/lorem-markdownum/markdown.txt' > docs/about.md
 ```
 
-We'd like our documentation site to include some navigation headers, so we'll
-edit the configuration file and add some information about the order and title
-to use for out headers:
+As our documentation site will include some navigation headers, you may want to
+edit the configuration file and add some information about the order, title, and
+nesting of each page in the navigation header by adding a [`pages`][pages]
+setting:
 
-```no-highlight
+```yaml
 site_name: MkLorum
 pages:
-- Home: index.md
-- About: about.md
+    - Home: index.md
+    - About: about.md
 ```
 
-Refresh the browser and you'll now see a navigation bar with `Home` and `About`
-headers.
+Save your changes and you'll now see a navigation bar with `Home` and `About`
+items on the left as well as `Search`, `Previous`, and `Next` items on the
+right.
+
+![Screenshot](img/multipage.png)
+
+Try the menu items and navigate back and forth between pages. Then click on
+`Search`. A search dialog will appear, allowing you to search for any text on
+any page. Notice that the search results include every occurrence of the search
+term on the site and links directly to the section of the page in which the
+search term appears. You get of all that with no effort or configuration on your
+part!
+
+![Screenshot](img/search.png)
 
 ## Theming our documentation
 
-While we're here can also change the configuration file to alter how the
-documentation is displayed. Let's go ahead and change the theme. Edit the
-`mkdocs.yml` file to the following:
+Now change the configuration file to alter how the documentation is displayed by
+changing the theme. Edit the `mkdocs.yml` file and add a [`theme`][theme] setting:
 
-```no-highlight
+```yaml
 site_name: MkLorum
 pages:
-- Home: index.md
-- About: about.md
+    - Home: index.md
+    - About: about.md
 theme: readthedocs
 ```
 
-Refresh the browser again, and you'll now see the ReadTheDocs theme being used.
+Save your changes, and you'll see the ReadTheDocs theme being used.
 
 ![Screenshot](img/readthedocs.png)
 
+## Changing the Favicon Icon
+
+By default, MkDocs uses the [MkDocs favicon] icon. To use a different icon, create
+an `img` subdirectory in your `docs_dir` and copy your custom `favicon.ico` file
+to that directory. MkDocs will automaticaly detect and use that file as your
+favicon icon.
+
+[MkDocs favicon]: /img/favicon.ico
+
 ## Building the site
 
-That's looking good. We're ready to deploy the first pass of our `MkLorum`
-documentation now. Let's build the documentation.
+That's looking good. You're ready to deploy the first pass of your `MkLorum`
+documentation. First build the documentation:
 
 ```bash
 mkdocs build
 ```
 
-This will create a new directory, named `site`. Let's take a look inside the
+This will create a new directory, named `site`. Take a look inside the
 directory:
 
 ```bash
-ls site
-about css fonts img index.html js
+$ ls site
+about  fonts  index.html  license  search.html
+css    img    js          mkdocs   sitemap.xml
 ```
 
-Notice that our source documentation has been output as two HTML files named
-`index.html` and `about/index.html`. We also have various other media that's
-been copied into the `site` directory as part of the documentation theme.
+Notice that your source documentation has been output as two HTML files named
+`index.html` and `about/index.html`. You also have various other media that's
+been copied into the `site` directory as part of the documentation theme. You
+even have a `sitemap.xml` file and `mkdocs/search_index.json`.
 
 If you're using source code control such as `git` you probably don't want to
 check your documentation builds into the repository. Add a line containing
@@ -188,11 +288,11 @@ check your documentation builds into the repository. Add a line containing
 echo "site/" >> .gitignore
 ```
 
-If you're using another source code control you'll want to check it's
+If you're using another source code control tool you'll want to check it's
 documentation on how to ignore specific directories.
 
 After some time, files may be removed from the documentation but they will still
-reside in the `site` directory. To remove those stale files, just run mkdocs
+reside in the `site` directory. To remove those stale files, just run `mkdocs`
 with the `--clean` switch.
 
 ```bash
@@ -218,22 +318,30 @@ mkdocs build --help
 
 ## Deploying
 
-The documentation site that we've just built only uses static files so you'll be
+The documentation site that you just built only uses static files so you'll be
 able to host it from pretty much anywhere. [GitHub project pages] and [Amazon
-S3] are good hosting options. Upload the contents of the entire `site` directory
-to wherever you're hosting your website from and you're done. For specific
-instructions for a number of common hosts, see the [Deploying your Docs] page.
+S3] may be good hosting options, depending upon your needs. Upload the contents
+of the entire `site` directory to wherever you're hosting your website from and
+you're done. For specific instructions on a number of common hosts, see the
+[Deploying your Docs][deploy] page.
 
 ## Getting help
 
 To get help with MkDocs, please use the [discussion group], [GitHub issues] or
 the MkDocs IRC channel `#mkdocs` on freenode.
 
+[deploy]: user-guide/deploying-your-docs/
+[mkdocs]: user-guide/styling-your-docs/#mkdocs
+[readthedocs]: user-guide/styling-your-docs/#readthedocs
+[MkDocs wiki]: https://github.com/mkdocs/mkdocs/wiki/MkDocs-Themes
+[build your own]: user-guide/custom-themes/
 [Amazon S3]: http://docs.aws.amazon.com/AmazonS3/latest/dev/WebsiteHosting.html
-[Chocolatey]: https://chocolatey.org/
+[get-pip.py]: https://bootstrap.pypa.io/get-pip.py
+[pages]: user-guide/configuration/#pages
 [discussion group]: https://groups.google.com/forum/#!forum/mkdocs
 [GitHub issues]: https://github.com/mkdocs/mkdocs/issues
-[GitHub project pages]: https://help.github.com/articles/creating-project-pages-manually
-[pip]: http://pip.readthedocs.org/en/latest/installing.html
+[GitHub project pages]: https://help.github.com/articles/creating-project-pages-manually/
+[pip]: http://pip.readthedocs.io/en/stable/installing/
 [Python]: https://www.python.org/
-[Deploying your Docs]: user-guide/deploying-your-docs.md
+[site_name]: user-guide/configuration/#site_name
+[theme]: user-guide/configuration/#theme
